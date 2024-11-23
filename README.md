@@ -82,6 +82,53 @@ Modify these parameters in the script or pass them via the command line.
 
 ## How It Works
 
+### Imitation Learning
+
+Imitation Learning (IL) is a method where an AI model learns to perform tasks by mimicking expert demonstrations rather than being explicitly programmed or optimized via trial-and-error (e.g., reinforcement learning)[4]. The process involves:
+
+1. **Expert Demonstration**: Collecting data from skilled individuals or pre-recorded activities. In this case, football players’ movements and strategies are captured.
+2. **Learning Policy**: The model is trained to map observations (e.g., player positions) to actions (e.g., movement, passing) by minimizing the difference between its predictions and the expert’s actions.
+3. **Goal**: To replicate real-world tactical decisions and strategies, allowing the agents to behave like expert players.
+
+Imitation Learning is effective when sufficient high-quality data is available and when the goal is to replicate human-like behaviors rather than optimize for predefined rewards.
+
+### HMM in Finding Roles
+
+The Hidden Markov Model (HMM) is a probabilistic model used to infer hidden states based on observed data. In the context of role assignment for football players:
+
+1. **Input**:
+   - Positional data for players (e.g., offensive and defensive positions).
+   - Observations for each timestep (e.g., player coordinates, velocities).
+
+2. **HMM Training**:
+   - The HMM learns statistical patterns from the dataset, treating observed player movements as evidence for underlying "hidden" roles (e.g., striker, defender, midfielder).
+   - It models transitions between roles over time, capturing the fluid nature of football strategies.
+
+3. **Role Assignment**:
+   - Once trained, the HMM assigns players to specific roles at each timestep by identifying the most probable sequence of states (roles) given the observed data.
+   - The output includes role sequences, role-specific mean positions, and variances, which define the spatial and tactical behavior of each role.
+
+Definition of each agent role as a training features could improve imitation loss substantially[1]
+
+### Input Feature Overview
+
+1. **Temporal Context**: The input features are organized in a time series, where each moment represents the state of the game for all players.
+
+2. **Role Assignment**: Player roles (e.g., forward, midfielder) are derived from their spatial behavior using Euclidean distance to pre-defined cluster centers.
+
+3. **Player Features**: For each player, at each timestamp, the following features are calculated:
+   - **Distance to Goal**
+   - **Distance to Ball**
+   - **Distance to Teammates/Opponents**
+   - **Velocity**
+   - **Relative Movement** (change in position relative to others)
+
+4. **Input Shape**: The input is a 3D array with shape `(num_moments, num_players, 13)`:
+   - `num_moments`: Temporal dimension (time steps)
+   - `num_players`: Number of players
+   - `13`: Features per player at each time step
+
+
 ## Example Results
 
 **Dataset:** I used this [dataset](https://arxiv.org/abs/1703.03121) combined with my private dataset around comparable size.
@@ -107,4 +154,7 @@ Both policies achieve reasonable accuracy given the limited dataset. However, th
    Hoang M. Le, Peter Carr, Yisong Yue, and Patrick Lucey (2017). *Data-Driven Ghosting using Deep Imitation Learning*. Retrieved from [link](https://la.disneyresearch.com/wp-content/uploads/Data-Driven-Ghosting-using-Deep-Imitation-Learning-Paper1.pdf)
 
 3. **Coordinated-Multi-Agent-Imitation-Learning Implementation (Basketball)**  
-   samshipengs. Retrieved from [Github Repo]https://github.com/samshipengs/Coordinated-Multi-Agent-Imitation-Learning))
+   samshipengs. Retrieved from [Github Repo](https://github.com/samshipengs/Coordinated-Multi-Agent-Imitation-Learning)
+
+4. **A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning**  
+   Stephane Ross, Geoffrey J. Gordon, J. Andrew Bagnell. Retrieved from [link](https://arxiv.org/abs/1011.0686)

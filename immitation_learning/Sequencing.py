@@ -130,69 +130,129 @@ def get_sequences(single_game, sequence_length, overlap, policy=None, n_fts=2, n
     return (
      train, target)
 
-
 def feature_roll(role_idx, x_curr, dup_ft=4, x_prev=None):
-    k = dup_ft
-    total_dup = k * 2
-    curr_player_ft = x_curr[:, :, :44]
-    curr_ball_ft = x_curr[:, :, -2:]
+    k = dup_ft  # Number of nearest players to consider for proximity (default is 4)
+    total_dup = k * 2  # Total number of nearest players (teammates and opponents)
+    
+    # Extract player and ball features from the current frame (x_curr)
+    curr_player_ft = x_curr[:, :, :44]  # Player position and other features (44 features per player)
+    curr_ball_ft = x_curr[:, :, -2:]  # Ball position and velocity (2 features)
+    
+    # If a previous frame (x_prev) is provided, extract its player and ball features as well
     if x_prev is not None:
-        prev_player_ft = x_prev[:, :, :44]
-        prev_ball_ft = x_prev[:, :, -2:]
+        prev_player_ft = x_prev[:, :, :44]  # Player features from previous frame
+        prev_ball_ft = x_prev[:, :, -2:]  # Ball features from previous frame
+
+    # Prepare the shape of the new feature matrix
     shape = list(x_curr.shape)
-    shape[2] = 286
+    shape[2] = 286  # 286 is the total number of features per player including new features
+
+    # Initialize an empty array for storing the new features
     new_feature = np.zeros(shape)
+
+    # Define the position of the goal (fixed position for simplicity)
     goal_pos = [1.0, 0]
+
+    # Extract the features for the active player (based on role_idx)
     active_player = curr_player_ft[:, :, role_idx * 2:role_idx * 2 + 2]
+    
+    # Initialize ball velocity array
     ball_vel = np.zeros(curr_ball_ft.shape)
+
+    # If previous frame is available, compute ball velocity as the difference between current and previous frame
     if x_prev is not None:
         ball_vel = curr_ball_ft - prev_ball_ft
+
+    # Combine current ball features with ball velocity
     new_ball_ft = np.concatenate((curr_ball_ft, ball_vel), axis=2)
-    dist_def = np.zeros((shape[0], shape[1], 11))
-    dist_off = np.zeros((shape[0], shape[1], 11))
+
+    # Initialize arrays to store distance values for defensive and offensive players
+    dist_def = np.zeros((shape[0], shape[1], 11))  # Distance to the nearest defensive players
+    dist_off = np.zeros((shape[0], shape[1], 11))  # Distance to the nearest offensive players
+
+    # Iterate through all 22 players to compute their features
     for i in range(22):
+        # Copy the current player's position to the new feature matrix
         new_feature[:, :, i * 13:i * 13 + 2] = curr_player_ft[:, :, i * 2:i * 2 + 2]
+
+        # Reset goal position for each player (always [1.0, 0])
         goal_pos = [1.0, 0]
+        
+        # If there is no previous frame, set movement-related features to 0
         if x_prev is None:
             new_feature[:, :, i * 13 + 2:i * 13 + 4] = 0
         else:
+            # Compute movement as the difference in positions from previous frame
             new_feature[:, :, i * 13 + 2:i * 13 + 4] = curr_player_ft[:, :, i * 2:i * 2 + 2] - prev_player_ft[:, :, i * 2:i * 2 + 2]
+        
+        # Get the player's current position
         pos = new_feature[:, :, i * 13:i * 13 + 2]
+        
+        # Calculate distance from player to the ball
         new_feature[:, :, i * 13 + 4] = ((pos[:, :, 0] - curr_ball_ft[:, :, 0]) ** 2 + (pos[:, :, 1] - curr_ball_ft[:, :, 1]) ** 2) ** 0.5
+        
+        # Calculate relative x and y distances from player to the ball
         a = pos[:, :, 0] - curr_ball_ft[:, :, 0]
         b = pos[:, :, 1] - curr_ball_ft[:, :, 1]
         c = new_feature[:, :, i * 13 + 4]
-        new_feature[:, :, i * 13 + 5] = np.divide(a, c, out=(np.zeros_like(a)), where=(c != 0))
-        new_feature[:, :, i * 13 + 6] = np.divide(b, c, out=(np.zeros_like(b)), where=(c != 0))
+        new_feature[:, :, i * 13 + 5] = np.divide(a, c, out=(np.zeros_like(a)), where=(c != 0))  # x-component
+        new_feature[:, :, i * 13 + 6] = np.divide(b, c, out=(np.zeros_like(b)), where=(c != 0))  # y-component
+
+        # Calculate distance from player to the goal
         new_feature[:, :, i * 13 + 7] = ((pos[:, :, 0] - goal_pos[0]) ** 2 + (pos[:, :, 1] - goal_pos[1]) ** 2) ** 0.5
+        
+        # Calculate relative x and y distances from player to the goal
         a = pos[:, :, 0] - goal_pos[0]
         b = pos[:, :, 1] - goal_pos[1]
         c = new_feature[:, :, i * 13 + 7]
-        new_feature[:, :, i * 13 + 8] = np.divide(a, c, out=(np.zeros_like(a)), where=(c != 0))
-        new_feature[:, :, i * 13 + 9] = np.divide(b, c, out=(np.zeros_like(b)), where=(c != 0))
+        new_feature[:, :, i * 13 + 8] = np.divide(a, c, out=(np.zeros_like(a)), where=(c != 0))  # x-component
+        new_feature[:, :, i * 13 + 9] = np.divide(b, c, out=(np.zeros_like(b)), where=(c != 0))  # y-component
+
+        # Calculate the straight-line distance from player to the goal
         new_feature[:, :, i * 13 + 10] = ((pos[:, :, 0] - goal_pos[0]) ** 2 + (pos[:, :, 1] - goal_pos[1]) ** 2) ** 0.5
+        
+        # Calculate relative x and y distances from player to active player
         a = pos[:, :, 0] - active_player[:, :, 0]
         b = pos[:, :, 0] - active_player[:, :, 1]
         c = new_feature[:, :, i * 13 + 10]
-        new_feature[:, :, i * 13 + 11] = np.divide(a, c, out=(np.zeros_like(a)), where=(c != 0))
-        new_feature[:, :, i * 13 + 12] = np.divide(b, c, out=(np.zeros_like(b)), where=(c != 0))
-        if i < 11:
-            dist_def[:, :, i] = new_feature[:, :, i * 13 + 10]
-        else:
-            dist_off[:, :, i - 11] = new_feature[:, :, i * 13 + 10]
+        new_feature[:, :, i * 13 + 11] = np.divide(a, c, out=(np.zeros_like(a)), where=(c != 0))  # x-component
+        new_feature[:, :, i * 13 + 12] = np.divide(b, c, out=(np.zeros_like(b)), where=(c != 0))  # y-component
 
+        # Store the distances to the goal for defensive and offensive players
+        if i < 11:
+            dist_def[:, :, i] = new_feature[:, :, i * 13 + 10]  # Defenders (first 11 players)
+        else:
+            dist_off[:, :, i - 11] = new_feature[:, :, i * 13 + 10]  # Offenders (next 11 players)
+
+    # Find the k nearest teammates and opponents based on distance
     k_nearest_teammate = dist_def.argsort()[:, :, 1:k + 1]
     k_nearest_opponent = 11 + dist_off.argsort()[:, :, :k]
+    
+    # Combine both teammates' and opponents' nearest players into one matrix
     k_combine = np.concatenate((k_nearest_teammate, k_nearest_opponent), axis=2)
+    
+    # Initialize an array to store the nearest player's feature indices
     nearest_player_ft = np.zeros((shape[0], shape[1], k * 2 * 13))
+    
+    # Set the initial indices for nearest players
     nearest_player_ft[:, :, :total_dup] = k_combine[:, :, :] * 13
+    
+    # Update the nearest players' indices based on their proximity
     for z in range(1, 13):
         nearest_player_ft[:, :, z * total_dup:z * total_dup + total_dup] = nearest_player_ft[:, :, (z - 1) * total_dup:(z - 1) * total_dup + total_dup] + 1
 
+    # Sort the nearest players' features based on proximity
     nearest_player_ft.sort()
+    
+    # Convert the indices to integers
     nearest_player_ft = nearest_player_ft.astype(int)
+
+    # Concatenate the original features, the nearest player features, and the new ball features
     final_feature = np.concatenate((new_feature, np.take(new_feature, nearest_player_ft), new_ball_ft), axis=2)
+
+    # Return the final feature array
     return final_feature
+
 
 
 def pred_sequence(agents, x):

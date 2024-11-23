@@ -3,21 +3,27 @@ import numpy as np
 from immitation_learning.Utilities import *
 from immitation_learning.Sequencing import *
 from immitation_learning.Loader import *
-import matplotlib.pyplot as plt
-import draw_function as dw
 from immitation_learning.train import JointPolicy
-import tensorflow as tf
 
 
 
-ds_path = 'dataset/metrics_sport2/'
-off_means_path  = "assets/Role_means/off_means.npy"
-def_means_path  = "assets/Role_means/def_means.npy"
-Loader = MetricSportsFormat(ds_path)
+ds_path = 'Your path'
+off_means_path  = "assets/off_means.npy"
+def_means_path  = "assets/def_means.npy"
+Loader = DSSportsFormat(ds_path)
 
 
 ds = Loader.load_data()
 
+# please change the loader function since it was for my specific case
+# The output 'ds' is a tuple:
+# ds[0]: all_off (List[np.ndarray]) - Group A data (e.g., offensive players).
+#        Shape for each array: (T, num_group_A_entities * features).
+# ds[1]: all_def (List[np.ndarray]) - Group B data (e.g., defensive players).
+#        Shape for each array: (T, num_group_B_entities * features).
+# ds[2]: all_ball (List[np.ndarray]) - Central entity data (e.g., the ball).
+#        Shape for each array: (T, features).
+# ds[3]: all_length (List[int]) - Number of timesteps (T) for each sample.
 
 all_off, all_def, all_ball, all_length = ds
 off_means = np.load(off_means_path)

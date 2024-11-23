@@ -8,7 +8,7 @@ class _Coordinated_Dataset:
         self.num_players = num_players
         self.num_components = self.num_players
 
-class MetricSportsFormat(_Coordinated_Dataset):
+class DSSportsFormat(_Coordinated_Dataset):
 
     def __init__(self, ds_path, num_players=11):
         super().__init__(ds_path, num_players)

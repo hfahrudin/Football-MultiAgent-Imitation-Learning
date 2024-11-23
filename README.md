@@ -52,8 +52,8 @@ python get_structure.py --ds_path /path/to/your/dataset --player_num 11 --n_defe
 
 There are two types of models you can train: **SinglePolicy** and **JointPolicy**.
 
-- **SinglePolicy**: Train a policy for one player (e.g., defensive role).
-- **JointPolicy**: Train policies for multiple players (e.g., both offensive and defensive roles).
+- **SinglePolicy**: Train a policy for each agent, independently.
+- **JointPolicy**: Train policies for all agents simultanously with shared environment.
 
 For **SinglePolicy**:
 
@@ -92,3 +92,6 @@ Modify these parameters in the script or pass them via the command line.
 
 2. **Data-Driven Ghosting using Deep Imitation Learning**  
    Hoang M. Le, Peter Carr, Yisong Yue, and Patrick Lucey (2017). *Data-Driven Ghosting using Deep Imitation Learning*. Retrieved from [link](https://la.disneyresearch.com/wp-content/uploads/Data-Driven-Ghosting-using-Deep-Imitation-Learning-Paper1.pdf)
+
+3. **Coordinated-Multi-Agent-Imitation-Learning Implementation (Basketball)**  
+   samshipengs. Retrieved from [Github Repo]https://github.com/samshipengs/Coordinated-Multi-Agent-Imitation-Learning))

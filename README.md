@@ -80,10 +80,23 @@ The following hyperparameters are used in both the SinglePolicy and JointPolicy 
 
 Modify these parameters in the script or pass them via the command line.
 
-## Example Results
-
 ## How It Works
 
+## Example Results
+
+**Dataset:** I used this [dataset](https://arxiv.org/abs/1703.03121) combined with my private dataset around comparable size.
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/c4899c0e-6431-48e3-9326-26ffe0df1db4" alt="Demo GIF" width="500">
+    <p><b>Joint Policy Agent Inference Demo</b></p>
+</div>
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6e4615d2-0408-4c6f-8400-56d52be05f12" alt="Demo GIF" width="500">
+       <p><b>Single Policy Agent Inference Demo</b></p> 
+</div>
+
+Both policies achieve reasonable accuracy given the limited dataset. However, the **Joint Policy** shows smoother movements, fewer abrupt role changes, and less frequent instances of agents unexpectedly swapping positions compared to the **Single Policy**.
 
 ## References
 

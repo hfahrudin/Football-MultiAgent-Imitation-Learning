@@ -128,7 +128,6 @@ Definition of each agent role as a training features could improve imitation los
    - `num_players`: Number of players
    - `13`: Features per player at each time step
 
-
 ## Example Results
 
 **Dataset:** I used this [dataset](https://arxiv.org/abs/1703.03121) combined with my private dataset around comparable size.
